@@ -15,26 +15,13 @@ class XombreroHistoryExtractor:
             return True
 
     def getipath(self, params):
-        raise NotImplementedError('aaaaa')
-        ipath = params["ipath:"][:-4]
-
-        docdata = ""
-        eof = rclexecm.RclExecM.noteof
-
-        try:
-            docdata = self._docdata(int(ipath.decode('utf-8')))
-        except Exception as err:
-            ok = False
-        else:
-            ok = True
-            docdata = self._data(ipath)
-            eof = rclexecm.RclExecM.eofnext
-
-        return (ok, docdata, ipath, eof)
+        ipath = int(params["ipath:"].decode("utf-8"))
+        self.fp.seek(ipath)        
+        return self.getnext()
 
     def getnext(self, *_):
         try:
-            uri = next(self.fp)[:-1]
+            uri = nextline(fp)
         except StopIteration:
             ok = True
             docdata = None
@@ -42,8 +29,8 @@ class XombreroHistoryExtractor:
             eof = rclexecm.RclExecM.eofnow
         else:
             try:
-                title = next(self.fp)[:-1]
-                date = next(self.fp)[:-1]
+                title = nextline(fp)
+                date = nextline(fp)
             except StopIteration:
                 ok = False
                 docdata = None
@@ -54,6 +41,13 @@ class XombreroHistoryExtractor:
                 eof = rclexecm.RclExecM.noteof
 
         return (ok, docdata, uri, eof)
+
+def nextline(fp):
+    line = fp.readline()
+    if line:
+        return line[:-1]
+    else:
+        raise StopIteration
 
 def render_docdata(date, title):
     clean_title = title.replace(b'&', b'&amp;') \
