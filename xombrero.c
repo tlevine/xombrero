@@ -956,6 +956,29 @@ set_xtp_meaning(struct tab *t, int tab_meaning)
 }
 
 const gchar *
+get_src(struct tab *t, struct karg *args)
+{
+	WebKitWebFrame		*frame;
+	WebKitWebDataSource	*ds;
+	GString			*contents;
+	const gchar	*src = NULL;
+
+	frame = webkit_web_view_get_focused_frame(t->wv);
+	ds = webkit_web_frame_get_data_source(frame);
+	if (webkit_web_data_source_is_loading(ds)) {
+		show_oops(t,"Webpage is still loading.");
+		return (1);
+	}
+
+	contents = webkit_web_data_source_get_data(ds);
+	if (!contents)
+		show_oops(t,"No contents - opening empty file");
+
+  src = contents ? contents->str : "";
+  return src;
+}
+
+const gchar *
 get_title(struct tab *t, bool window)
 {
 	const gchar		*set = NULL, *title = NULL;
