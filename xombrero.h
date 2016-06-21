@@ -330,6 +330,7 @@ struct history {
 	gchar			*uri;
 	gchar			*title;
 	time_t			time; /* When the item was added. */
+  gchar			*b64src; /* Raw item contents */
 };
 RB_HEAD(history_list, history);
 RB_PROTOTYPE(history_list, history, entry, history_rb_cmp);
@@ -426,7 +427,8 @@ void	soup_cookie_jar_add_cookie(SoupCookieJar *, SoupCookie *);
 void	soup_cookie_jar_delete_cookie(SoupCookieJar *, SoupCookie *);
 
 /* history */
-int			insert_history_item(const gchar *uri, const gchar *title, time_t time);
+int			insert_history_item(const gchar *uri, const gchar *title, time_t time,
+    const gchar *b64src);
 int			save_global_history_to_disk(struct tab *t);
 int			restore_global_history(void);
 char			*color_visited_helper(void);

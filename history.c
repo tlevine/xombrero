@@ -65,7 +65,8 @@ purge_history(void)
 }
 
 int
-insert_history_item(const gchar *uri, const gchar *title, time_t time)
+insert_history_item(const gchar *uri, const gchar *title, time_t time,
+                    const gchar *b64src)
 {
 	struct history		*h;
 
@@ -75,6 +76,7 @@ insert_history_item(const gchar *uri, const gchar *title, time_t time)
 	h = g_malloc(sizeof(struct history));
 	h->uri = g_strdup(uri);
 	h->title = g_strdup(title);
+	h->b64src = g_strdup(b64src);
 	h->time = time;
 
 	DNPRINTF(XT_D_HISTORY, "%s: adding %s\n", __func__, h->uri);
@@ -94,7 +96,7 @@ restore_global_history(void)
 {
 	char			file[PATH_MAX];
 	FILE			*f;
-	gchar			*uri, *title = NULL, *stime = NULL, *err = NULL;
+	gchar			*uri, *title = NULL, *stime = NULL, *err = NULL, b64src = NULL;
 	time_t			time;
 	struct tm		tm;
 	const char		delim[3] = {'\\', '\\', '\0'};
@@ -130,7 +132,13 @@ restore_global_history(void)
 
 		time = mktime(&tm);
 
-		if (insert_history_item(uri, title, time)) {
+		if ((b64src = fparseln(f, NULL, NULL, delim, 0)) == NULL)
+			if (feof(f) || ferror(f)) {
+				err = "broken history file (b64src)";
+				goto done;
+			}
+
+		if (insert_history_item(uri, title, time, b64src)) {
 			err = "failed to insert item";
 			goto done;
 		}
@@ -138,9 +146,11 @@ restore_global_history(void)
 		free(uri);
 		free(title);
 		free(stime);
+		free(b64src);
 		uri = NULL;
 		title = NULL;
 		stime = NULL;
+    b64src = NULL;
 	}
 
 done:

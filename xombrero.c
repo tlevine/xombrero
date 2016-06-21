@@ -956,12 +956,12 @@ set_xtp_meaning(struct tab *t, int tab_meaning)
 }
 
 const gchar *
-get_src(struct tab *t, struct karg *args)
+get_src(struct tab *t)
 {
 	WebKitWebFrame		*frame;
 	WebKitWebDataSource	*ds;
 	GString			*contents;
-	const gchar	*src = NULL;
+	const gchar	*b64src = NULL;
 
 	frame = webkit_web_view_get_focused_frame(t->wv);
 	ds = webkit_web_frame_get_data_source(frame);
@@ -973,13 +973,11 @@ get_src(struct tab *t, struct karg *args)
   */
 
 	contents = webkit_web_data_source_get_data(ds);
-  /*
 	if (!contents)
-		show_oops(t,"No contents - opening empty file");
-  */
+		return "";
 
-  src = contents ? contents->str : "";
-  return src;
+  b64src = g_base64_encode(contents->str, contents->len);
+  return b64src;
 }
 
 const gchar *
@@ -4315,7 +4313,8 @@ notify_load_status_cb(WebKitWebView* wview, GParamSpec* pspec, struct tab *t)
 			h = RB_FIND(history_list, &hl, &find);
 			if (!h)
 				insert_history_item(uri,
-				    get_src(t), time(NULL));
+            get_title(t, FALSE), time(NULL), get_src(t));
+            // Do I need to g_free()?
 			else
 				h->time = time(NULL);
 		}
