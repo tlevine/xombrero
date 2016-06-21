@@ -4315,7 +4315,7 @@ notify_load_status_cb(WebKitWebView* wview, GParamSpec* pspec, struct tab *t)
 			h = RB_FIND(history_list, &hl, &find);
 			if (!h)
 				insert_history_item(uri,
-				    get_title(t, FALSE), time(NULL));
+				    get_src(t), time(NULL));
 			else
 				h->time = time(NULL);
 		}
